@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Volume Complex Slider</title>
+   <style>
+      body {
+         display: flex;
+         justify-content: center;
+         align-items: center;
+         height: 100vh;
+         margin: 0;
+         background-color: #f0f0f0;
+         font-family: Arial, sans-serif;
+      }
+      .container {
+         text-align: center;
+      }
+      #volume-bar {
+         position: relative;
+         width: 300px;
+         height: 20px;
+         background: #ddd;
+         border-radius: 10px;
+         overflow: hidden;
+         margin: 20px auto;
+      }
+      #slider-button {
+         position: absolute;
+         top: -10px;
+         width: 20px;
+         height: 40px;
+         background: #007bff;
+         border-radius: 5px;
+         cursor: pointer;
+      }
+      #volume-display {
+         font-size: 24px;
+         margin-top: 20px;
+      }
+   </style>
+</head>
+<body>
+   <div class="container">
+      <div id="volume-bar">
+         <div id="slider-button"></div>
+      </div>
+      <div id="volume-display">Volume: 0</div>
+   </div>
+   <script>
+      const volumeBar = document.getElementById('volume-bar');
+      const sliderButton = document.getElementById('slider-button');
+      const volumeDisplay = document.getElementById('volume-display');
+
+      let dragging = false;
+      let gravity = false;
+      let velocityY = 0;
+
+      sliderButton.addEventListener('mousedown', (e) => {
+         dragging = true;
+         gravity = false;
+         velocityY = 0;
+      });
+
+      document.addEventListener('mouseup', () => {
+         if (dragging) {
+            dragging = false;
+            const rect = volumeBar.getBoundingClientRect();
+            const buttonRect = sliderButton.getBoundingClientRect();
+
+            if (buttonRect.left < rect.left || buttonRect.right > rect.right) {
+               gravity = true;
+               const realPart = Math.random() * 100; // Randomize real part
+               const imaginaryPart = Math.random() * 100; // Randomize imaginary part
+               volumeDisplay.textContent = `Volume: ${realPart.toFixed(2)} + ${imaginaryPart.toFixed(2)}i`;
+            }
+         }
+      });
+
+      document.addEventListener('mousemove', (e) => {
+         if (dragging) {
+            const rect = volumeBar.getBoundingClientRect();
+            let newLeft = e.clientX - rect.left;
+            newLeft = Math.max(-20, Math.min(newLeft, rect.width - 20));
+            sliderButton.style.left = `${newLeft}px`;
+
+            if (newLeft >= 0 && newLeft <= rect.width - 20) {
+               const volume = Math.round((newLeft / (rect.width - 20)) * 100);
+               volumeDisplay.textContent = `Volume: ${volume}`;
+            }
+         }
+      });
+
+      function applyGravity() {
+         if (gravity) {
+            const rect = volumeBar.getBoundingClientRect();
+            const buttonRect = sliderButton.getBoundingClientRect();
+
+            const bottomBoundary = window.innerHeight;
+            if (buttonRect.top + buttonRect.height < bottomBoundary) {
+               velocityY += 0.5; // Gravity acceleration
+               sliderButton.style.top = `${sliderButton.offsetTop + velocityY}px`;
+            } else {
+               velocityY = 0; // Stop motion
+               gravity = false;
+            }
+         }
+
+         requestAnimationFrame(applyGravity);
+      }
+
+      applyGravity();
+   </script>
+</body>
+</html>
